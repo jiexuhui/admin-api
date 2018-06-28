@@ -106,7 +106,7 @@ export default {
             .then(res => {
               console.log("success");
               this.loading = false;
-              // this.$router.push({ path: "/" });
+              this.$router.push({ path: "/" });
             })
             .catch(() => {
               this.loading = false;

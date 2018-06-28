@@ -14,7 +14,7 @@ const user = {
     name: "",
     avatar: "",
     introduction: "",
-    roles: [],
+    roles: "",
     setting: {
       articlePlatform: []
     }
@@ -82,11 +82,11 @@ const user = {
             // }
             const data = response.data;
 
-            if (data.roles && data.roles.length > 0) {
+            if (data.role) {
               // 验证返回的roles是否是一个非空数组
-              commit("SET_ROLES", data.roles);
+              commit("SET_ROLES", data.role);
             } else {
-              reject("getInfo: roles must be a non-null array !");
+              reject("getInfo: roles must be a non-null !");
             }
 
             commit("SET_NAME", data.name);
@@ -120,7 +120,7 @@ const user = {
         logout(state.token)
           .then(() => {
             commit("SET_TOKEN", "");
-            commit("SET_ROLES", []);
+            commit("SET_ROLES", "");
             removeToken();
             resolve();
           })
@@ -134,6 +134,7 @@ const user = {
     FedLogOut({ commit }) {
       return new Promise(resolve => {
         commit("SET_TOKEN", "");
+        commit("SET_ROLES", "");
         removeToken();
         resolve();
       });

@@ -11,7 +11,7 @@ export function loginByUsername(username, password) {
 
 export function logout() {
   return request({
-    url: "/login/logout",
+    url: "/admin/system/logout",
     method: "post"
   });
 }
@@ -23,3 +23,11 @@ export function getUserInfo(token) {
     params: { token }
   });
 }
+
+export function getUserMenu(token){
+  const data = {
+    token
+  };
+  return request.post("/admin/system/usermenu", data);
+}
+

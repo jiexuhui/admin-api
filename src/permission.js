@@ -26,7 +26,7 @@ router.beforeEach((to, from, next) => {
       next({ path: "/" });
       NProgress.done(); // if current page is dashboard will not trigger	afterEach hook, so manually handle it
     } else {
-      console.log(store.getters.token)
+      console.log(store.getters.token);
       if (!store.getters.roles) {
         // 判断当前用户是否已拉取完user_info信息
         store
@@ -49,14 +49,15 @@ router.beforeEach((to, from, next) => {
             });
           });
       } else {
-        console.log(store.getters.roles,to.meta.roles)
-        // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
-        if (hasPermission(store.getters.roles, to.meta.roles)) {
-          next(); //
-        } else {
-          next({ path: "/401", replace: true, query: { noGoBack: true } });
-        }
+        // console.log(store.getters.roles, to.meta.roles);
+        // // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
+        // if (hasPermission(store.getters.roles, to.meta.roles)) {
+        //   next(); //
+        // } else {
+        //   next({ path: "/401", replace: true, query: { noGoBack: true } });
+        // }
         // 可删 ↑
+        next();
       }
     }
   } else {
@@ -72,5 +73,6 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach(() => {
+  // router.addRoutes([{ path: "*", redirect: "/404", hidden: true }]);
   NProgress.done(); // finish progress bar
 });

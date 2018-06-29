@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { loginByUsername, logout, getUserInfo } from "@/api/login";
+import { editsystemuser } from "@/api/system";
 import { getToken, setToken, removeToken } from "@/utils/auth";
 import crypto from "crypto";
 const _start = "1k1wgr7f1s469jgt6r1wefco7ho23hw6";
@@ -86,12 +87,28 @@ const user = {
               // 验证返回的roles是否是一个非空数组
               commit("SET_ROLES", data.role);
             } else {
-              reject("getInfo: roles must be a non-null !");
+              reject("未分配权限，请联系管理员!");
             }
 
             commit("SET_NAME", data.name);
             commit("SET_AVATAR", data.avatar);
             commit("SET_INTRODUCTION", data.introduction);
+            resolve(response);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    },
+
+    EditAdminUser({ commit, state }, params) {
+      params.password = crypto
+        .createHash("md5")
+        .update(`${_start}.${params.password}.${_end}`)
+        .digest("hex");
+      return new Promise((resolve, reject) => {
+        editsystemuser(params)
+          .then(response => {
             resolve(response);
           })
           .catch(error => {

@@ -24,10 +24,8 @@ export function getUserInfo(token) {
   });
 }
 
-export function getUserMenu(token){
-  const data = {
-    token
-  };
+export function getRoleMenus(role) {
+  const data = { role };
+  console.log("getmenu:", data);
   return request.post("/admin/system/usermenu", data);
 }
-

@@ -1,4 +1,4 @@
-import { asyncRouterMap, constantRouterMap } from "@/router";
+import { constantRouterMap } from "@/router";
 import { getRoleMenus } from "@/api/login";
 /* Layout */
 import Layout from "@/views/layout/Layout";
@@ -59,6 +59,7 @@ const permission = {
                 const baseRoute = {
                   path: "/" + m.path,
                   meta: m.meta,
+                  name: m.name,
                   component: Layout
                 };
                 const childRoute = [];
@@ -67,6 +68,7 @@ const permission = {
                     childRoute.push({
                       path: child.path,
                       meta: child.meta,
+                      name: child.name,
                       component: () => import(`@/views/${m.path}/${child.path}`)
                     });
                   }
@@ -77,7 +79,7 @@ const permission = {
                 accessedRouters.push(notfound);
               }
             }
-            console.log(accessedRouters);
+            console.log("accessedRouters",accessedRouters);
             commit("SET_ROUTERS", accessedRouters);
             // setToken(data);
             resolve();

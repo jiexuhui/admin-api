@@ -18,7 +18,7 @@ import "./icons"; // icon
 import "./errorLog"; // error log
 import "./permission"; // permission control
 // import "./mock"; // simulation data
-import qs from "qs";
+// import qs from "qs";
 
 import * as filters from "./filters"; // global filters
 // Vue.prototype.$qs = qs;

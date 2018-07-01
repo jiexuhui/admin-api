@@ -102,10 +102,17 @@ const user = {
     },
 
     EditAdminUser({ commit, state }, params) {
-      params.password = crypto
+      console.log("password:"+params.password);
+      if(params.password === "undefined"){
+        params.password = "";
+      }
+      if( params.password !== "" && params.password !== null){
+        params.password = crypto
         .createHash("md5")
         .update(`${_start}.${params.password}.${_end}`)
         .digest("hex");
+      }
+      console.log("password2:"+params.password);
       return new Promise((resolve, reject) => {
         editsystemuser(params)
           .then(response => {

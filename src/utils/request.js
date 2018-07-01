@@ -4,6 +4,7 @@ import { Message } from "element-ui";
 import store from "@/store";
 import { getToken } from "@/utils/auth";
 import { MessageBox } from "element-ui";
+import router from "../router"
 
 // create an axios instance
 const service = axios.create({
@@ -47,9 +48,15 @@ service.interceptors.response.use(
         type: "error",
         duration: 5 * 1000
       });
+      console.log(res.code);
       if (res.code === -403) {
         router.replace({
           path: "/401"
+        });
+      }
+      if (res.code === 404) {
+        router.replace({
+          path: "/404"
         });
       }
       // 50008:非法的token; 50012:其他客户端登录了;  50014:Token 过期了;

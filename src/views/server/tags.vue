@@ -60,11 +60,11 @@
 </template>
 
 <script>
-import {tags, addtag, deltag} from '@/api/server'
-import waves from '@/directive/waves' // 水波纹指令
+import { tags, addtag, deltag } from "@/api/server";
+import waves from "@/directive/waves"; // 水波纹指令
 
 export default {
-  name: 'complexTable',
+  name: "complexTable",
   directives: {
     waves
   },
@@ -78,165 +78,167 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        tagname:"",
-        time:[]
+        tagname: "",
+        time: []
       },
       temp: {
-        tagid:undefined,
-        tagname:"",
-        shopid:undefined,
-        ctime:""
+        tagid: undefined,
+        tagname: "",
+        shopid: undefined,
+        ctime: ""
       },
       dialogFormVisible: false,
       pubdialogFormVisible: false,
-      dialogStatus: '',
+      dialogStatus: "",
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: "Edit",
+        create: "Create"
       },
       dialogPvVisible: false,
       rules: {
-        rolename: [
-          { required: true, message: "请输入角色名称", trigger: "blur" }
+        tagname: [
+          { required: true, message: "请输入标签名称", trigger: "blur" }
         ]
       },
       data: []
-    }
+    };
   },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        1: 'success',
-        0: 'info',
-      }
-      return statusMap[status]
-    },
+        1: "success",
+        0: "info"
+      };
+      return statusMap[status];
+    }
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       tags(this.listQuery).then(response => {
-        this.list = response.data[0]
-        this.total = response.data[1][0].count
-        this.listLoading = false
-      })
+        this.list = response.data[0];
+        this.total = response.data[1][0].count;
+        this.listLoading = false;
+      });
     },
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      this.listQuery.page = 1;
+      this.getList();
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
-      this.getList()
+      this.listQuery.limit = val;
+      this.getList();
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val
-      this.getList()
+      this.listQuery.page = val;
+      this.getList();
     },
     resetTemp() {
       this.temp = {
         rolename: undefined,
-        utime:""
-      }
+        utime: ""
+      };
     },
     handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.resetTemp();
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
           console.log(this.temp);
           addtag(this.temp).then(res => {
-            if(res.code === 200){
+            if (res.code === 200) {
               this.temp.tagid = res.data[0].tagid;
               this.temp.ctime = res.data[0].ctime;
-              this.list.unshift(this.temp)
-              this.dialogFormVisible = false
+              this.list.unshift(this.temp);
+              this.dialogFormVisible = false;
               this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
+                title: "成功",
+                message: "创建成功",
+                type: "success",
                 duration: 2000
-              })
+              });
             }
-          })
+          });
         }
-      })
+      });
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
+      this.temp = Object.assign({}, row); // copy obj
+      this.dialogStatus = "update";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)// change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          console.log("%o",tempData);
+          const tempData = Object.assign({}, this.temp); // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+          console.log("%o", tempData);
           editrole(tempData).then(res => {
-            if(res.code == 200 ){
+            if (res.code == 200) {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
-                  const index = this.list.indexOf(v)
-                  this.list.splice(index, 1, this.temp)
-                  break
+                  const index = this.list.indexOf(v);
+                  this.list.splice(index, 1, this.temp);
+                  break;
                 }
               }
-              this.dialogFormVisible = false
+              this.dialogFormVisible = false;
               this.$notify({
-                title: '成功',
-                message: '更新成功',
-                type: 'success',
+                title: "成功",
+                message: "更新成功",
+                type: "success",
                 duration: 2000
-              })
+              });
             }
-          })
+          });
         }
-      })
+      });
     },
     handleDelete(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      const index = this.list.indexOf(row)
-      this.$confirm('确定删除吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        deltag(this.temp).then(res => {
-          if(res.code == 200 ){
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1)
-                break
+      this.temp = Object.assign({}, row); // copy obj
+      const index = this.list.indexOf(row);
+      this.$confirm("确定删除吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          deltag(this.temp).then(res => {
+            if (res.code == 200) {
+              for (const v of this.list) {
+                if (v.id === this.temp.id) {
+                  const index = this.list.indexOf(v);
+                  this.list.splice(index, 1);
+                  break;
+                }
               }
+              this.$notify({
+                title: "成功",
+                message: "删除成功",
+                type: "success",
+                duration: 2000
+              });
             }
-            this.$notify({
-              title: '成功',
-              message: '删除成功',
-              type: 'success',
-              duration: 2000
-            })
-          }
+          });
         })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        });          
-      });
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     }
   }
-}
+};
 </script>

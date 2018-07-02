@@ -38,12 +38,12 @@
       </el-table-column>
       <el-table-column label="主图">
         <template slot-scope="scope">
-           <img :src="scope.row.main" width="40" height="40"/>
+           <img class="link-type" @click="handleUpload(scope.row)" :src="scope.row.main" width="40" height="40"/>
         </template>
       </el-table-column>
       <el-table-column align="center" label="介绍图">
         <template slot-scope="scope">
-          <span v-for="thumb in scope.row.thumbs">
+          <span  class="link-type" @click="handleUpload(scope.row)" v-for="thumb in scope.row.thumbs">
             <img :src="thumb" width="40" height="40" style="padding:5px"/>
           </span>
         </template>
@@ -120,9 +120,31 @@
       </div>
     </el-dialog>
 
+    <el-dialog title="上传图片" :visible.sync="uploaddialogFormVisible">
+      <el-form :rules="rules" ref="dialogForm" label-position="left" label-width="80px" style='width: 400px; margin-left:50px;'>
+          <el-upload
+            class="upload"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="fileList"
+            :auto-upload="false"
+            list-type="picture">
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+          </el-upload>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="uploaddialogFormVisible = false">{{$t('table.cancel')}}</el-button>
+        <!-- <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button> -->
+        <!-- <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button> -->
+      </div>
+    </el-dialog>
   </div>
 </template>
 
+<script src="http://gosspublic.alicdn.com/aliyun-oss-sdk-4.4.4.min.js"></script>
 <script>
 import { goods, addgoods, editgoods, delgoods } from "@/api/server";
 import waves from "@/directive/waves"; // 水波纹指令
@@ -146,6 +168,7 @@ export default {
       temp: {},
       edittemp: {},
       dialogFormVisible: false,
+      uploaddialogFormVisible: false,
       dialogStatus: "",
       textMap: {
         update: "Edit",
@@ -162,7 +185,13 @@ export default {
         category: [{ required: true, message: "请选择类型", trigger: "blur" }]
       },
       categorys: [],
-      tags: []
+      tags: [],
+      fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}],
+      upload:{
+        region: 'oss-cn-hangzhou',//根据你买的那个区的做相应的更改
+        bucket: 'buket名称',
+        percentage: 0,
+      }
     };
   },
   filters: {
@@ -193,6 +222,15 @@ export default {
         this.total = response.data[3][0].count;
         this.listLoading = false;
       });
+    },
+    submitUpload() {  
+        this.$refs.upload.submit();
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
     },
     handleFilter() {
       this.listQuery.page = 1;
@@ -314,6 +352,9 @@ export default {
             message: "已取消删除"
           });
         });
+    },
+    handleUpload(){
+      this.uploaddialogFormVisible = true
     }
   }
 };

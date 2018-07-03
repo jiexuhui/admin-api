@@ -43,7 +43,7 @@
       </el-table-column>
       <el-table-column align="center" label="介绍图">
         <template slot-scope="scope">
-          <span  class="link-type" @click="handleUpload(scope.row)" v-for="thumb in scope.row.thumbs">
+          <span  class="link-type" @click="handthumbsleUpload(scope.row)" v-for="thumb in scope.row.thumbs">
             <img :src="thumb" width="40" height="40" style="padding:5px"/>
           </span>
         </template>
@@ -124,20 +124,23 @@
       <el-form :rules="rules" ref="dialogForm" label-position="left" label-width="80px" style='width: 400px; margin-left:50px;'>
           <el-upload
             class="upload"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            ref="upload"
+            action=""
             :on-preview="handlePreview"
             :on-remove="handleRemove"
+            :before-upload="beforeupload" 
             :file-list="fileList"
-            :auto-upload="false"
+            :auto-upload="true"
             list-type="picture">
             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+            <!-- <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button> -->
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
+          <!-- <el-progress v-show="showProgress" :text-inside="true" :stroke-width="15" :percentage="percentage"></el-progress> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="uploaddialogFormVisible = false">{{$t('table.cancel')}}</el-button>
-        <!-- <el-button v-if="dialogStatus=='create'" type="primary" @click="createData">{{$t('table.confirm')}}</el-button> -->
+        <el-button type="primary" @click="mainEdit">{{$t('table.confirm')}}</el-button>
         <!-- <el-button v-else type="primary" @click="updateData">{{$t('table.confirm')}}</el-button> -->
       </div>
     </el-dialog>
@@ -146,7 +149,7 @@
 
 <script src="http://gosspublic.alicdn.com/aliyun-oss-sdk-4.4.4.min.js"></script>
 <script>
-import { goods, addgoods, editgoods, delgoods } from "@/api/server";
+import { goods, addgoods, editgoods, delgoods, upload } from "@/api/server";
 import waves from "@/directive/waves"; // 水波纹指令
 
 export default {
@@ -186,12 +189,37 @@ export default {
       },
       categorys: [],
       tags: [],
-      fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}],
-      upload:{
-        region: 'oss-cn-hangzhou',//根据你买的那个区的做相应的更改
-        bucket: 'buket名称',
-        percentage: 0,
-      }
+      file: {},
+      fileList: [
+        // {
+        //   name: "food.jpeg",
+        //   url: "http://topimgs.oss-cn-hangzhou.aliyuncs.com/test"
+        // }
+        // {
+        //   name: "food2.jpeg",
+        //   url:
+        //     "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
+        // }
+      ],
+      upload: {
+        region: "oss-cn-hangzhou", //根据你买的那个区的做相应的更改
+        bucket: "buket名称"
+      },
+      mainEditform: {
+        goodsid: 0,
+        goodsname: undefined,
+        price: 0,
+        storenum: 0,
+        point: "",
+        main: "",
+        thumbs: "",
+        category: "",
+        tags: []
+      },
+      thumsEditform: {
+        goodsid: 0
+      },
+      uploadstatus: ""
     };
   },
   filters: {
@@ -223,11 +251,105 @@ export default {
         this.listLoading = false;
       });
     },
-    submitUpload() {  
-        this.$refs.upload.submit();
+    beforeupload(file) {
+      if (this.uploadstatus == "main" && this.fileList.length === 1) {
+        this.$message.error("只能上传一张主图哦");
+        return;
+      }
+      console.log("beforefile:", file);
+      let param = new FormData(); // 创建form对象
+      param.append("file", file, file.name); // file对象是 beforeUpload参数
+      let config = {
+        headers: { "Content-Type": "multipart/form-data" }
+      };
+      upload(param).then(res => {
+        if (res.code === 200 && res.data) {
+          this.file = {};
+          this.file.name = res.data.name;
+          this.file.url = "http://assets.v-islands.com/" + res.data.name;
+          this.fileList.push(this.file);
+          console.log("this.fileList:", this.fileList);
+        }
+      });
+      return false;
+    },
+    handleUpload(row) {
+      this.fileList = [];
+      // console.log("row", row);
+      this.mainEditform = Object.assign({}, row);
+      this.mainEditform.goodsid = row.goodsid;
+      if (this.mainEditform.tagstr) {
+        this.mainEditform.tags = this.mainEditform.tagstr
+          .split(",")
+          .map(Number);
+      } else {
+        this.mainEditform.tags = [];
+      }
+      this.mainEditform.thumbs = this.mainEditform.thumbs.toString();
+      this.uploadstatus = "main";
+      this.file.name = "主图";
+      this.file.url = row.main;
+      this.fileList.push(this.file);
+      this.uploaddialogFormVisible = true;
+    },
+    handthumbsleUpload(row) {
+      this.fileList = [];
+      // console.log("row", row);
+      this.mainEditform = Object.assign({}, row);
+      this.mainEditform.goodsid = row.goodsid;
+      if (this.mainEditform.tagstr) {
+        this.mainEditform.tags = this.mainEditform.tagstr
+          .split(",")
+          .map(Number);
+      } else {
+        this.mainEditform.tags = [];
+      }
+      this.uploadstatus = "thumbs";
+      for (let file of this.mainEditform.thumbs) {
+        this.file.name = "介绍图";
+        this.file.url = file;
+        this.fileList.push(this.file);
+      }
+      this.uploaddialogFormVisible = true;
+    },
+    mainEdit() {
+      if (this.uploadstatus === "main") {
+        this.mainEditform.main = this.fileList[0].url;
+      }
+      if (this.uploadstatus === "thumbs") {
+        const thumbs = [];
+        for (let i of this.fileList) {
+          thumbs.push(i.url);
+        }
+        this.mainEditform.thumbs = thumbs.toString();
+      }
+      editgoods(this.mainEditform).then(res => {
+        console.log("res:", res);
+        if (res.code == 200) {
+          this.getList();
+          this.uploaddialogFormVisible = false;
+          this.$notify({
+            title: "成功",
+            message: "更新成功",
+            type: "success",
+            duration: 2000
+          });
+        }
+      });
+    },
+    submitUpload(file) {
+      const files = document.getElementById("upload");
+      console.log("uploadfile", files);
+      return;
+      this.$refs.upload.submit();
+      console.log("file:", event.target);
+      upload(event).then(res => {
+        console.log("res:", res);
+      });
     },
     handleRemove(file, fileList) {
       console.log(file, fileList);
+      this.fileList = fileList;
     },
     handlePreview(file) {
       console.log(file);
@@ -352,9 +474,6 @@ export default {
             message: "已取消删除"
           });
         });
-    },
-    handleUpload(){
-      this.uploaddialogFormVisible = true
     }
   }
 };

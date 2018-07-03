@@ -87,3 +87,14 @@ export function editgoods(params) {
 export function delgoods(params) {
   return request.post("/admin/server/delgoods", params);
 }
+
+/**
+ * OSS token
+ * @param {*} params
+ */
+export function upload(params) {
+  let config = {
+    headers: { "Content-Type": "multipart/form-data" }
+  };
+  return request.post("/admin/server/upload", params, config);
+}

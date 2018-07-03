@@ -256,7 +256,7 @@ export default {
         this.$message.error("只能上传一张主图哦");
         return;
       }
-      console.log("beforefile:", file);
+      console.log("beforefile:", file) ;
       let param = new FormData(); // 创建form对象
       param.append("file", file, file.name); // file对象是 beforeUpload参数
       let config = {
@@ -306,16 +306,19 @@ export default {
       }
       this.uploadstatus = "thumbs";
       for (let file of this.mainEditform.thumbs) {
+        this.file = {};
         this.file.name = "介绍图";
         this.file.url = file;
         this.fileList.push(this.file);
       }
+      console.log("filelist1:", this.fileList);
       this.uploaddialogFormVisible = true;
     },
     mainEdit() {
       if (this.uploadstatus === "main") {
         this.mainEditform.main = this.fileList[0].url;
       }
+       console.log("filelist:", this.fileList);
       if (this.uploadstatus === "thumbs") {
         const thumbs = [];
         for (let i of this.fileList) {
@@ -323,6 +326,7 @@ export default {
         }
         this.mainEditform.thumbs = thumbs.toString();
       }
+     console.log("thumbs:", this.mainEditform.thumbs);
       editgoods(this.mainEditform).then(res => {
         console.log("res:", res);
         if (res.code == 200) {

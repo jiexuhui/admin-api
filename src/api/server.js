@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import qs from 'qs';
 
 /**
  * 获取标签列表
@@ -98,3 +99,37 @@ export function upload(params) {
   };
   return request.post("/admin/server/upload", params, config);
 }
+
+/**
+ * 删除物品
+ * @param {*} params
+ */
+export function applys(params) {
+  return request.post("/admin/server/applys", params);
+}
+
+/**
+ * 修改申请状态
+ * @param {*} params
+ */
+export function updateapply(params) {
+  return request.post("/admin/server/updateapply", params);
+}
+
+/**
+ * 添加直播报表
+ * @param {*} params
+ */
+export function reports(params) {
+  return request.post("/admin/server/reports", params);
+}
+
+/**
+ * 添加直播报表
+ * @param {*} params
+ */
+export function addreport(params) {
+  console.log("params:",params);
+  return request.post("/admin/server/addreport", params);
+}
+

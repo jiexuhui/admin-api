@@ -192,7 +192,7 @@ export default {
         ],
         price: [{ required: true, message: "请输入价格", trigger: "blur" }],
         storenum: [{ required: true, message: "请输入库存", trigger: "blur" }],
-        main: [{ required: true, message: "请输入主图地址", trigger: "blur" }],
+        // main: [{ required: true, message: "请输入主图地址", trigger: "blur" }],
         category: [{ required: true, message: "请选择类型", trigger: "blur" }]
       },
       categorys: [],
@@ -296,8 +296,10 @@ export default {
       this.mainEditform.thumbs = this.mainEditform.thumbs.toString();
       this.uploadstatus = "main";
       this.file.name = "主图";
-      this.file.url = row.main;
-      this.fileList.push(this.file);
+      if (row.main !== "") {
+        this.file.url = row.main;
+        this.fileList.push(this.file);
+      }
       this.uploaddialogFormVisible = true;
     },
     handthumbsleUpload(row) {

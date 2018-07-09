@@ -175,6 +175,10 @@ export default {
       },
       bookstatus: [
         {
+          value: 2,
+          label: "所有"
+        },
+        {
           value: 0,
           label: "未通过"
         },

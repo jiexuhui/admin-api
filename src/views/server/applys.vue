@@ -1,9 +1,11 @@
 <template>
   <div class="app-container">
     <div class="filter">
-      <el-input @keyup.enter.native="handleFilter" style="width:200px;padding:10px" class="filter-item" placeholder="直播房间" v-model="listQuery.anchor">
+      <!-- <el-input @keyup.enter.native="handleFilter" style="width:200px;padding:10px" class="filter-item" placeholder="直播房间" v-model="listQuery.anchor">
+      </el-input> -->
+      <el-input @keyup.enter.native="handleFilter" style="width:100px;padding:10px" class="filter-item" placeholder="主播ID" v-model="listQuery.anchor">
       </el-input>
-    订阅：<el-select v-model="listQuery.isbook" placeholder="请选择" style="width:200px;padding:10px" >
+    状态：<el-select v-model="listQuery.status" placeholder="请选择" style="width:200px;padding:10px" >
         <el-option
           v-for="item in bookstatus"
           :key="item.value"
@@ -47,7 +49,7 @@
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="主播ID">
+      <el-table-column align="center" label="主播">
         <template slot-scope="scope">
           <span>{{scope.row.anchor}}</span>
         </template>
@@ -72,13 +74,18 @@
           <span><el-tag type="info">{{scope.row.isbook ===1?"订阅":"取消"}}</el-tag></span>
         </template>
       </el-table-column>
+      <el-table-column min-width="150" label="申请状态">
+        <template slot-scope="scope">
+          <span><el-tag type="info">{{scope.row.status ===1?"已通过":"未通过"}}</el-tag></span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="success" size="mini" @click="handleCreate(scope.row)" v-if="scope.row.isbook===1">添加报告
+          <el-button type="success" size="mini" @click="handleCreate(scope.row)" v-if="scope.row.status===1 && scope.row.hasreport==0">添加报告
           </el-button>
-          <el-button type="success" size="mini" @click="path(scope.row)" v-if="scope.row.isbook===1">查看报告
+          <el-button type="success" size="mini" @click="path(scope.row)" v-if="scope.row.status===1 && scope.row.hasreport==1">查看报告
           </el-button>
-          <el-button type="success" size="mini" v-if="scope.row.isbook===0">订阅
+          <el-button type="success" size="mini" @click="handleModifyStatus(scope.row)" v-if="scope.row.status===0">通过申请
           </el-button>
         </template>
       </el-table-column>
@@ -130,13 +137,13 @@
 </template>
 
 <script>
-import { applys, addreport } from '@/api/server'
-import waves from '@/directive/waves' // 水波纹指令
-import { parseTime } from '@/utils'
-import { parse } from 'path';
+import { applys, addreport, updateapply } from "@/api/server";
+import waves from "@/directive/waves"; // 水波纹指令
+import { parseTime } from "@/utils";
+import { parse } from "path";
 
 export default {
-  name: 'complexTable',
+  name: "complexTable",
   directives: {
     waves
   },
@@ -147,13 +154,13 @@ export default {
       total: null,
       listLoading: true,
       listQuery: {
-        anchor:"",
-        isbook: 1,
+        anchor: "",
+        status: 1,
         page: 1,
         limit: 20,
-        name:"",
-        time:[],
-        ptime:[]
+        name: "",
+        time: [],
+        ptime: []
       },
       temp: {
         pid: 0,
@@ -163,82 +170,78 @@ export default {
         mtotal: 0,
         reporter: "",
         rdesc: "",
-        goods:[
-          {num:0}
-        ]
+        goods: [{ num: 0 }],
+        status: 0
       },
-      bookstatus:[
+      bookstatus: [
         {
           value: 0,
-          label: '关闭'
-        }, {
+          label: "未通过"
+        },
+        {
           value: 1,
-          label: '订阅'
-        }, 
+          label: "已通过"
+        }
       ],
       dialogFormVisible: false,
-      dialogStatus: '',
+      dialogStatus: "",
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: "Edit",
+        create: "Create"
       },
       rules: {
         watchnum: [
           { required: true, message: "请输入观看人数", trigger: "blur" }
         ],
-        ptime: [
-          { required: true, message: "请输入直播时长", trigger: "blur" }
-        ],
-        ptime: [
-          { required: true, message: "请输入直播时长", trigger: "blur" }
-        ],
-        ptime: [
-          { required: true, message: "请输入直播时长", trigger: "blur" }
-        ],
+        ptime: [{ required: true, message: "请输入直播时长", trigger: "blur" }],
+        ptime: [{ required: true, message: "请输入直播时长", trigger: "blur" }],
+        ptime: [{ required: true, message: "请输入直播时长", trigger: "blur" }]
       },
-      good:{
-        id:0,
-        name:"",
-        reporter:0
+      good: {
+        id: 0,
+        name: "",
+        reporter: 0
       },
-      goods:[],
-      link:{
-        pid:0
+      goods: [],
+      link: {
+        pid: 0
       }
-    }
+    };
   },
   created() {
-    this.getList()
+    this.listQuery.anchor = this.$route.params.anchor;
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       applys(this.listQuery).then(response => {
-        this.list = response.data[0]
-        this.total = response.data[1][0].count
-        this.listLoading = false
-      })
+        this.list = response.data[0];
+        this.total = response.data[1][0].count;
+        this.listLoading = false;
+      });
     },
-    path(row){
-      this.$router.push({ name: '直播报告', params: { pid: row.id} })
+    path(row) {
+      this.$router.push({ name: "直播报告", params: { pid: row.id } });
       // setTimeout(function(){
       //   this.$router.push({name: '直播报告',params:{ pid: row.id}});
       // },2000);
     },
     handleModifyStatus(row) {
       this.temp.id = row.id;
-      if(row.isbook === 0){
-        updateapply(this.temp).then(res=>{
-        if(res.code === 200){
-          this.getList();
-           this.$notify({
-            title: '成功',
-            message: '订阅成功',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      })
+      if (row.status === 0) {
+        this.temp.status = 1;
+        updateapply(this.temp).then(res => {
+          if (res.code === 200) {
+            this.getList();
+            this.$notify({
+              title: "成功",
+              message: "已通过",
+              type: "success",
+              duration: 2000
+            });
+          }
+        });
       }
     },
     // resetTemp() {
@@ -251,49 +254,49 @@ export default {
       // console.log("row", row)
       // this.resetTemp()
       this.temp.goods = [];
-      this.temp.pid = row.id
-      let goodsids = row.goodids.split(",")
-      let goodsname = row.goodsname.split(",")
-      for(var i=0;i<goodsids.length;i++){
+      this.temp.pid = row.id;
+      let goodsids = row.goodids.split(",");
+      let goodsname = row.goodsname.split(",");
+      for (var i = 0; i < goodsids.length; i++) {
         this.good = {};
-        this.good.id = goodsids[i]
-        this.good.name = goodsname[i]
-        this.temp.goods.push(this.good)
+        this.good.id = goodsids[i];
+        this.good.name = goodsname[i];
+        this.temp.goods.push(this.good);
       }
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
           // this.temp.goods = JSON.stringify(this.temp.goods);
-          console.log("temp:",this.temp);
+          console.log("temp:", this.temp);
           addreport(this.temp).then(res => {
-            if(res.code === 200){
-              this.dialogFormVisible = false
+            if (res.code === 200) {
+              this.dialogFormVisible = false;
               this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
+                title: "成功",
+                message: "创建成功",
+                type: "success",
                 duration: 2000
-              })
+              });
             }
-          })
+          });
         }
-      })
+      });
     },
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      this.listQuery.page = 1;
+      this.getList();
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
-      this.getList()
+      this.listQuery.limit = val;
+      this.getList();
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val
-      this.getList()
+      this.listQuery.page = val;
+      this.getList();
     }
   }
-}
+};
 </script>

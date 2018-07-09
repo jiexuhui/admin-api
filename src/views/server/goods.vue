@@ -31,6 +31,11 @@
           <span>{{scope.row.storenum}}</span>
         </template>
       </el-table-column>
+      <el-table-column  align="center" label="佣金" width="100">
+        <template slot-scope="scope">
+          <span>{{scope.row.commission}}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="亮点">
         <template slot-scope="scope">
           <span>{{scope.row.point}}</span>
@@ -82,6 +87,9 @@
         </el-form-item>
         <el-form-item label="库存" prop="storenum">
           <el-input type="number" v-model="temp.storenum"></el-input>
+        </el-form-item>
+        <el-form-item label="佣金" prop="storenum">
+          <el-input type="number" v-model="temp.commission"></el-input>
         </el-form-item>
         <el-form-item label="亮点" prop="point">
           <el-input v-model="temp.point"></el-input>
@@ -256,7 +264,7 @@ export default {
         this.$message.error("只能上传一张主图哦");
         return;
       }
-      console.log("beforefile:", file) ;
+      console.log("beforefile:", file);
       let param = new FormData(); // 创建form对象
       param.append("file", file, file.name); // file对象是 beforeUpload参数
       let config = {
@@ -318,7 +326,7 @@ export default {
       if (this.uploadstatus === "main") {
         this.mainEditform.main = this.fileList[0].url;
       }
-       console.log("filelist:", this.fileList);
+      console.log("filelist:", this.fileList);
       if (this.uploadstatus === "thumbs") {
         const thumbs = [];
         for (let i of this.fileList) {
@@ -326,7 +334,7 @@ export default {
         }
         this.mainEditform.thumbs = thumbs.toString();
       }
-     console.log("thumbs:", this.mainEditform.thumbs);
+      console.log("thumbs:", this.mainEditform.thumbs);
       editgoods(this.mainEditform).then(res => {
         console.log("res:", res);
         if (res.code == 200) {
@@ -417,7 +425,14 @@ export default {
       });
     },
     handleUpdate(row) {
+      console.log(row);
       this.temp = Object.assign({}, row);
+      for (let item of this.categorys) {
+        if (item.name === row.category) {
+          this.temp.category = item.id;
+        }
+      }
+      console.log(this.temp);
       this.temp.goodsid = row.goodsid;
       if (this.temp.tagstr) {
         this.temp.tags = this.temp.tagstr.split(",").map(Number);
@@ -435,7 +450,7 @@ export default {
         if (valid) {
           console.log("edittemp", this.temp);
           const tempData = Object.assign({}, this.temp);
-          // console.log("tempData", tempData);
+          console.log("tempData", tempData);
           editgoods(tempData).then(res => {
             console.log("res:", res);
             if (res.code == 200) {

@@ -9,7 +9,15 @@ module.exports = {
     // Paths
     assetsSubDirectory: "static",
     assetsPublicPath: "/",
-    proxyTable: {},
+    proxyTable: {
+      "/admin": {
+        target: "http://localhost:3010",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/admin": "admin"
+        }
+      }
+    },
 
     // Various Dev Server settings
     host: "localhost", // can be overwritten by process.env.HOST
@@ -62,7 +70,7 @@ module.exports = {
      * then assetsPublicPath should be set to "/bar/".
      * In most cases please use '/' !!!
      */
-    assetsPublicPath: "/vue-element-admin/", // If you are deployed on the root path, please use '/'
+    assetsPublicPath: "./", // If you are deployed on the root path, please use '/'
 
     /**
      * Source Maps

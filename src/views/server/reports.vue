@@ -12,7 +12,7 @@
         :default-time="['12:00:00', '08:00:00']">
       </el-date-picker>
       <el-button class="filter-item" type="primary" v-waves icon="el-icon-search" @click="handleFilter">{{$t('table.search')}}</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button>
+      <!-- <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">{{$t('table.add')}}</el-button> -->
     </div>
 
     <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
@@ -115,13 +115,13 @@
 </template>
 
 <script>
-import { reports } from '@/api/server'
-import waves from '@/directive/waves' // 水波纹指令
-import { parseTime } from '@/utils'
-import { parse } from 'path';
+import { reports } from "@/api/server";
+import waves from "@/directive/waves"; // 水波纹指令
+import { parseTime } from "@/utils";
+import { parse } from "path";
 
 export default {
-  name: 'complexTable',
+  name: "complexTable",
   directives: {
     waves
   },
@@ -132,8 +132,8 @@ export default {
       total: null,
       listLoading: true,
       listQuery: {
-        pid:"",
-        time:[],
+        pid: "",
+        time: [],
         page: 1,
         limit: 20
       },
@@ -146,118 +146,119 @@ export default {
         reporter: "",
         rdesc: ""
       },
-      bookstatus:[
+      bookstatus: [
         {
           value: 0,
-          label: '关闭'
-        }, {
+          label: "关闭"
+        },
+        {
           value: 1,
-          label: '订阅'
-        }, 
+          label: "订阅"
+        }
       ],
       dialogFormVisible: false,
-      dialogStatus: '',
+      dialogStatus: "",
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: "Edit",
+        create: "Create"
       },
       rules: {
         rolename: [
           { required: true, message: "请输入角色名称", trigger: "blur" }
         ]
-      },
-    }
+      }
+    };
   },
   created() {
-    this.listQuery.pid = this.$route.params.pid
-    this.getList()
+    this.listQuery.pid = this.$route.params.pid;
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       reports(this.listQuery).then(response => {
-        let data = response.data[0]
+        let data = response.data[0];
         //  console.log("data1:" ,data)
-        for(let item of data) {
-           let goodsnames = item.goodsname.split(',');
-           let nums = item.num.split(',');
-           let goodsname = "";
-           let num = ""
-           let kearr = []
-           for(let i=0; i<goodsnames.length; i++){
-             goodsname = goodsnames[i] + ":" + nums[i]
-             kearr.push(goodsname)
-           }
-           item.goodsname = kearr.toString();
+        for (let item of data) {
+          let goodsnames = item.goodsname.split(",");
+          let nums = item.num.split(",");
+          let goodsname = "";
+          let num = "";
+          let kearr = [];
+          for (let i = 0; i < goodsnames.length; i++) {
+            goodsname = goodsnames[i] + ":" + nums[i];
+            kearr.push(goodsname);
+          }
+          item.goodsname = kearr.toString();
         }
-        this.list = data
-        this.total = response.data[1][0].count
-        this.listLoading = false
-      })
+        this.list = data;
+        this.total = response.data[1][0].count;
+        this.listLoading = false;
+      });
     },
     handleModifyStatus(row) {
       this.temp.id = row.id;
-      if(row.isbook === 0){
-        updateapply(this.temp).then(res=>{
-        if(res.code === 200){
-          this.getList();
-           this.$notify({
-            title: '成功',
-            message: '订阅成功',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      })
+      if (row.isbook === 0) {
+        updateapply(this.temp).then(res => {
+          if (res.code === 200) {
+            this.getList();
+            this.$notify({
+              title: "成功",
+              message: "订阅成功",
+              type: "success",
+              duration: 2000
+            });
+          }
+        });
       }
     },
     resetTemp() {
       this.temp = {
         rolename: undefined,
-        utime:""
-      }
+        utime: ""
+      };
     },
     handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.resetTemp();
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
           console.log(this.temp);
           addrole(this.temp).then(res => {
-            if(res.code === 200){
+            if (res.code === 200) {
               this.temp.id = res.data.id;
               this.temp.utime = res.data.utime;
-              this.list.unshift(this.temp)
-              this.dialogFormVisible = false
+              this.list.unshift(this.temp);
+              this.dialogFormVisible = false;
               this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
+                title: "成功",
+                message: "创建成功",
+                type: "success",
                 duration: 2000
-              })
+              });
             }
-          })
+          });
         }
-      })
+      });
     },
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      this.listQuery.page = 1;
+      this.getList();
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
-      this.getList()
+      this.listQuery.limit = val;
+      this.getList();
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val
-      this.getList()
+      this.listQuery.page = val;
+      this.getList();
     }
   }
-}
+};
 </script>

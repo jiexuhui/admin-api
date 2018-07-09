@@ -1,5 +1,5 @@
 import request from "@/utils/request";
-import qs from 'qs';
+import qs from "qs";
 
 /**
  * 获取标签列表
@@ -129,7 +129,22 @@ export function reports(params) {
  * @param {*} params
  */
 export function addreport(params) {
-  console.log("params:",params);
+  console.log("params:", params);
   return request.post("/admin/server/addreport", params);
 }
 
+/**
+ * 主播列表
+ * @param {*} params
+ */
+export function anchors(params) {
+  return request.post("/admin/server/anchors", params);
+}
+
+/**
+ * 修改主播审核状态
+ * @param {*} params
+ */
+export function anchorreview(params) {
+  return request.post("/admin/server/anchorreview", params);
+}

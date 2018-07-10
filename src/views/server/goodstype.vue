@@ -11,7 +11,7 @@
       </el-table-column>
       <el-table-column label="操作" >
         <template slot-scope="scope">
-          <el-button class="filter-item" size="mini" @click="handleCreate(scope.row)" type="primary">{{$t('table.add')}}</el-button>
+          <el-button v-if="scope.row.fid === 0 " class="filter-item" size="mini" @click="handleCreate(scope.row)" type="primary">{{$t('table.add')}}</el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
           <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleDelete(scope.row)">{{$t('table.delete')}}
           </el-button>
@@ -55,7 +55,7 @@ export default {
     return {
       func: treeToArray,
       expandAll: true,
-      data: {},
+      data: [],
       args: [null, null, null],
       listLoading: true,
       temp: {
@@ -84,7 +84,7 @@ export default {
     getList() {
       this.listLoading = true;
       goodstypes().then(response => {
-        this.data = response.data[0];
+        this.data = response.data;
         this.listLoading = false;
       });
     },

@@ -41,6 +41,11 @@
           <span>{{scope.row.point}}</span>
         </template>
       </el-table-column>
+       <el-table-column align="center" label="banner">
+        <template slot-scope="scope">
+          <span>{{scope.row.banner === 0?"否":"是"}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="主图">
         <template slot-scope="scope">
            <img class="link-type" @click="handleUpload(scope.row)" :src="scope.row.main" width="40" height="40"/>
@@ -94,6 +99,16 @@
         <el-form-item label="亮点" prop="point">
           <el-input v-model="temp.point"></el-input>
         </el-form-item>
+        <el-form-item label="banner" prop="point">
+          <el-select v-model="temp.banner" placeholder="请选择" style="width:200px;padding:10px" >
+            <el-option
+              v-for="item in bannerstatus"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="主图" prop="main">
           <el-input v-model="temp.main"></el-input>
         </el-form-item>
@@ -101,14 +116,12 @@
           <el-input v-model="temp.thumbs"></el-input>
         </el-form-item>
         <el-form-item label="类型" prop="category">
-          <el-select v-model="temp.category" clearable placeholder="请选择">
-            <el-option
-              v-for="item in categorys"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
-            </el-option>
-          </el-select>
+          <el-cascader
+            expand-trigger="hover"
+            :options="categorys"
+            v-model="temp.category"
+            :props="categoryprops">
+          </el-cascader>
         </el-form-item> 
         <el-form-item label="标签" prop="tags">
           <el-select v-model="temp.tags" clearable multiple  placeholder="请选择">
@@ -157,7 +170,14 @@
 
 <script src="http://gosspublic.alicdn.com/aliyun-oss-sdk-4.4.4.min.js"></script>
 <script>
-import { goods, addgoods, editgoods, delgoods, upload } from "@/api/server";
+import {
+  goods,
+  addgoods,
+  editgoods,
+  delgoods,
+  upload,
+  goodstypes
+} from "@/api/server";
 import waves from "@/directive/waves"; // 水波纹指令
 
 export default {
@@ -167,6 +187,17 @@ export default {
   },
   data() {
     return {
+      categoryprops: { value: "id", label: "name" },
+      bannerstatus: [
+        {
+          value: 1,
+          label: "是"
+        },
+        {
+          value: 0,
+          label: "否"
+        }
+      ],
       tableKey: 0,
       list: null,
       total: null,
@@ -227,7 +258,8 @@ export default {
       thumsEditform: {
         goodsid: 0
       },
-      uploadstatus: ""
+      uploadstatus: "",
+      selectedoption: []
     };
   },
   filters: {
@@ -253,7 +285,17 @@ export default {
         if (response.data[0][0].goodsid !== null) {
           this.list = response.data[0];
         }
-        this.categorys = response.data[1];
+        goodstypes().then(res => {
+          this.categorys = res.data;
+          for (let index of this.list) {
+            for (let item of this.categorys) {
+              if (item.id === index.fid) {
+                index.category = item.name + "/" + index.category;
+              }
+            }
+          }
+        });
+        // this.categorys = response.data[1];
         this.tags = response.data[2];
         this.total = response.data[3][0].count;
         this.listLoading = false;
@@ -272,6 +314,7 @@ export default {
       };
       upload(param).then(res => {
         if (res.code === 200 && res.data) {
+          console.log(res);
           this.file = {};
           this.file.name = res.data.name;
           this.file.url = "http://assets.v-islands.com/" + res.data.name;
@@ -315,28 +358,42 @@ export default {
         this.mainEditform.tags = [];
       }
       this.uploadstatus = "thumbs";
-      for (let file of this.mainEditform.thumbs) {
-        this.file = {};
-        this.file.name = "介绍图";
-        this.file.url = file;
-        this.fileList.push(this.file);
+      console.log("mainEditform:", this.mainEditform);
+      if (this.mainEditform.thumbs[0] !== "") {
+        for (let file of this.mainEditform.thumbs) {
+          this.file = {};
+          this.file.name = "介绍图";
+          this.file.url = file;
+          this.fileList.push(this.file);
+        }
       }
       console.log("filelist1:", this.fileList);
       this.uploaddialogFormVisible = true;
     },
     mainEdit() {
-      if (this.uploadstatus === "main") {
-        this.mainEditform.main = this.fileList[0].url;
-      }
-      console.log("filelist:", this.fileList);
-      if (this.uploadstatus === "thumbs") {
-        const thumbs = [];
-        for (let i of this.fileList) {
-          thumbs.push(i.url);
+      if (this.fileList.length > 0) {
+        if (this.uploadstatus === "main") {
+          this.mainEditform.main = this.fileList[0].url;
         }
-        this.mainEditform.thumbs = thumbs.toString();
+        console.log("filelist:", this.fileList);
+        if (this.uploadstatus === "thumbs") {
+          const thumbs = [];
+          for (let i of this.fileList) {
+            thumbs.push(i.url);
+          }
+          this.mainEditform.thumbs = thumbs.toString();
+        }
+      } else {
+        if (this.uploadstatus === "main") {
+          this.mainEditform.main = "";
+        }
+        console.log("filelist:", this.fileList);
+        if (this.uploadstatus === "thumbs") {
+          this.mainEditform.thumbs = "";
+        }
       }
-      console.log("thumbs:", this.mainEditform.thumbs);
+
+      console.log("mainEditform:", this.mainEditform);
       editgoods(this.mainEditform).then(res => {
         console.log("res:", res);
         if (res.code == 200) {
@@ -395,12 +452,14 @@ export default {
         point: "",
         main: "",
         thumbs: "",
-        category: "",
-        tags: []
+        category: [],
+        tags: [],
+        banner: 0
       };
     },
     handleCreate() {
       this.resetTemp();
+      console.log("category:", this.categorys);
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
       this.$nextTick(() => {
@@ -410,8 +469,10 @@ export default {
     createData() {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
-          console.log(this.temp);
-          addgoods(this.temp).then(res => {
+          const addparam = Object.assign({}, this.temp);
+          addparam.category = addparam.category[addparam.category.length - 1];
+          console.log(addparam);
+          addgoods(addparam).then(res => {
             if (res.code == 200) {
               this.dialogFormVisible = false;
               this.getList();
@@ -421,6 +482,8 @@ export default {
                 type: "success",
                 duration: 2000
               });
+            } else {
+              this.$message.error("已存在相同的物品");
             }
           });
         }
@@ -429,11 +492,13 @@ export default {
     handleUpdate(row) {
       console.log(row);
       this.temp = Object.assign({}, row);
-      for (let item of this.categorys) {
-        if (item.name === row.category) {
-          this.temp.category = item.id;
-        }
-      }
+      // this.selectedoption = [row.pid, row.cid];
+      // for (let item of this.categorys) {
+      //   if (item.name === row.category) {
+      //     this.temp.category = item.id;
+      //   }
+      // }
+      this.temp.category = [row.fid, row.cid];
       console.log(this.temp);
       this.temp.goodsid = row.goodsid;
       if (this.temp.tagstr) {
@@ -452,6 +517,7 @@ export default {
         if (valid) {
           console.log("edittemp", this.temp);
           const tempData = Object.assign({}, this.temp);
+          tempData.category = tempData.category[tempData.category.length - 1];
           console.log("tempData", tempData);
           editgoods(tempData).then(res => {
             console.log("res:", res);

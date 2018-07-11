@@ -148,3 +148,35 @@ export function anchors(params) {
 export function anchorreview(params) {
   return request.post("/admin/server/anchorreview", params);
 }
+
+/**
+ * 获取首页分类列表
+ * @param {*} params
+ */
+export function classify(params) {
+  return request.post("/admin/server/classify", params);
+}
+
+/**
+ * 增加首页分类
+ * @param {*} params
+ */
+export function addclassify(params) {
+  return request.post("/admin/server/addclassify", params);
+}
+
+/**
+ * 编辑首页分类
+ * @param {*} params
+ */
+export function editclassify(params) {
+  return request.post("/admin/server/editclassify", params);
+}
+
+/**
+ * 删除首页分类
+ * @param {*} params
+ */
+export function delclassify(params) {
+  return request.post("/admin/server/delclassify", params);
+}

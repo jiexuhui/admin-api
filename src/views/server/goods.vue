@@ -63,6 +63,11 @@
           <span>{{scope.row.category}}</span>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="首页分类" v-if="role==='admin'">
+        <template slot-scope="scope">
+          <span>{{scope.row.classifyname}}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="标签">
         <template slot-scope="scope">
           <el-tag type="warning">{{scope.row.tags}}</el-tag>
@@ -122,6 +127,16 @@
             v-model="temp.category"
             :props="categoryprops">
           </el-cascader>
+        </el-form-item> 
+        <el-form-item label="首页类型" prop="classify" v-if="role === 'admin'">
+         <el-select v-model="temp.classify" placeholder="请选择" style="width:200px;padding:10px" >
+            <el-option
+              v-for="item in classifyoption"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
         </el-form-item> 
         <el-form-item label="标签" prop="tags">
           <el-select v-model="temp.tags" clearable multiple  placeholder="请选择">
@@ -253,13 +268,15 @@ export default {
         main: "",
         thumbs: "",
         category: "",
-        tags: []
+        tags: [],
+        role:""
       },
       thumsEditform: {
         goodsid: 0
       },
       uploadstatus: "",
-      selectedoption: []
+      selectedoption: [],
+      classifyoption: []
     };
   },
   filters: {
@@ -276,6 +293,7 @@ export default {
   },
   created() {
     this.getList();
+    this.role =  this.$store.getters.roles;
   },
   methods: {
     getList() {
@@ -296,8 +314,10 @@ export default {
           }
         });
         // this.categorys = response.data[1];
-        this.tags = response.data[2];
-        this.total = response.data[3][0].count;
+        this.classifyoption = response.data[2];
+        this.classifyoption.unshift({id:0, name: "无"})
+        this.tags = response.data[3];
+        this.total = response.data[4][0].count;
         this.listLoading = false;
       });
     },
@@ -491,6 +511,7 @@ export default {
     },
     handleUpdate(row) {
       console.log(row);
+      console.log("classify", this.classifyoption);
       this.temp = Object.assign({}, row);
       // this.selectedoption = [row.pid, row.cid];
       // for (let item of this.categorys) {

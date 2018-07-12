@@ -100,13 +100,14 @@
         <el-form-item label="价格" prop="price">
           <el-input type = "number" v-model="temp.price"></el-input>
         </el-form-item>
-        <el-form-item label="库存" prop="storenum">
+        <!-- <el-form-item label="库存" prop="storenum">
           <el-input type="number" v-model="temp.storenum"></el-input>
-        </el-form-item>
+        </el-form-item> -->
          <el-form-item
-            v-for="(item, index) in temp.stores"
+            v-for="(item, index) in stores"
             :label="'库存'+ (index+1)"
             :key="item.key"
+            prop="stores"
           >
             库存类型：<el-input v-model="item.name"></el-input>数量<el-input v-model="item.num"></el-input><el-button style="margin-top:20px" @click.prevent="removeStore(item)">删除</el-button>
           </el-form-item>
@@ -253,7 +254,7 @@ export default {
           { required: true, message: "请输入物品名称", trigger: "blur" }
         ],
         price: [{ required: true, message: "请输入价格", trigger: "blur" }],
-        storenum: [{ required: true, message: "请输入库存", trigger: "blur" }],
+        // storenum: [{ required: true, message: "请输入库存", trigger: "blur" }],
         // main: [{ required: true, message: "请输入主图地址", trigger: "blur" }],
         category: [{ required: true, message: "请选择类型", trigger: "blur" }]
       },
@@ -294,7 +295,8 @@ export default {
       },
       uploadstatus: "",
       selectedoption: [],
-      classifyoption: []
+      classifyoption: [],
+      stores:[{ name: "", num: 0 }]
     };
   },
   filters: {
@@ -496,18 +498,23 @@ export default {
         taobaourl: "",
         stores: [{ name: "", num: 0 }]
       };
+      this.stores = [{ name: "", num: 0 }]
     },
     addstore() {
-      this.temp.stores.push({
+      this.stores.push({
         name: "",
         num: 0
       });
+      console.log(this.stores);
     },
     removeStore(item) {
-      var index = this.temp.stores.indexOf(item);
+      console.log("stores:", this.temp)
+      var index = this.stores.indexOf(item);
+      console.log("index:",index)
       if (index !== -1) {
-        this.temp.stores.splice(index, 1);
+        this.stores.splice(index, 1);
       }
+      console.log("stores2:", this.stores)
     },
     handleCreate() {
       this.resetTemp();
@@ -522,6 +529,7 @@ export default {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
           const addparam = Object.assign({}, this.temp);
+          addparam.stores = this.stores;
           addparam.category = addparam.category[addparam.category.length - 1];
           console.log(addparam);
           addgoods(addparam).then(res => {
@@ -542,15 +550,8 @@ export default {
       });
     },
     handleUpdate(row) {
-      console.log(row);
-      console.log("classify", this.classifyoption);
+      this.dialogStatus = "Edit";
       this.temp = Object.assign({}, row);
-      // this.selectedoption = [row.pid, row.cid];
-      // for (let item of this.categorys) {
-      //   if (item.name === row.category) {
-      //     this.temp.category = item.id;
-      //   }
-      // }
       this.temp.category = [row.fid, row.cid];
       console.log(this.temp);
       this.temp.goodsid = row.goodsid;
@@ -559,6 +560,18 @@ export default {
       } else {
         this.temp.tags = [];
       }
+      this.stores = [];
+      if(this.temp.storenum) {
+        const arr = this.temp.storenum.split(",")
+        for(const i of arr) {
+            let obj = {}  
+            let keyarr = i.split(":");
+            obj.name = keyarr[0]
+            obj.num = keyarr[1]
+            this.stores.push(obj)
+        }
+      }
+      console.log("stores0", this.temp.stores)
       this.temp.thumbs = this.temp.thumbs.toString();
       this.dialogFormVisible = true;
       this.$nextTick(() => {
@@ -572,6 +585,7 @@ export default {
           const tempData = Object.assign({}, this.temp);
           tempData.category = tempData.category[tempData.category.length - 1];
           console.log("tempData", tempData);
+          tempData.stores = this.stores;
           editgoods(tempData).then(res => {
             console.log("res:", res);
             if (res.code == 200) {

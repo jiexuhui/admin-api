@@ -68,6 +68,11 @@
           <span>{{scope.row.classifyname}}</span>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="淘宝链接">
+        <template slot-scope="scope">
+          <span>{{scope.row.taobaourl}}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="标签">
         <template slot-scope="scope">
           <el-tag type="warning">{{scope.row.tags}}</el-tag>
@@ -98,6 +103,14 @@
         <el-form-item label="库存" prop="storenum">
           <el-input type="number" v-model="temp.storenum"></el-input>
         </el-form-item>
+         <el-form-item
+            v-for="(item, index) in temp.stores"
+            :label="'库存'+ (index+1)"
+            :key="item.key"
+          >
+            库存类型：<el-input v-model="item.name"></el-input>数量<el-input v-model="item.num"></el-input><el-button style="margin-top:20px" @click.prevent="removeStore(item)">删除</el-button>
+          </el-form-item>
+          <el-button style="margin-left:82px;margin-bottom:20px" @click.prevent="addstore()">增加库存类型</el-button>
         <el-form-item label="佣金" prop="storenum">
           <el-input type="number" v-model="temp.commission"></el-input>
         </el-form-item>
@@ -119,6 +132,9 @@
         </el-form-item>
         <el-form-item label="介绍图" prop="thumbs">
           <el-input v-model="temp.thumbs"></el-input>
+        </el-form-item>
+        <el-form-item label="淘宝地址" prop="main">
+          <el-input v-model="temp.taobaourl"></el-input>
         </el-form-item>
         <el-form-item label="类型" prop="category">
           <el-cascader
@@ -269,7 +285,9 @@ export default {
         thumbs: "",
         category: "",
         tags: [],
-        role:""
+        role: "",
+        taobaourl: "",
+        stores: []
       },
       thumsEditform: {
         goodsid: 0
@@ -293,7 +311,7 @@ export default {
   },
   created() {
     this.getList();
-    this.role =  this.$store.getters.roles;
+    this.role = this.$store.getters.roles;
   },
   methods: {
     getList() {
@@ -315,7 +333,7 @@ export default {
         });
         // this.categorys = response.data[1];
         this.classifyoption = response.data[2];
-        this.classifyoption.unshift({id:0, name: "无"})
+        this.classifyoption.unshift({ id: 0, name: "无" });
         this.tags = response.data[3];
         this.total = response.data[4][0].count;
         this.listLoading = false;
@@ -474,8 +492,22 @@ export default {
         thumbs: "",
         category: [],
         tags: [],
-        banner: 0
+        banner: 0,
+        taobaourl: "",
+        stores: [{ name: "", num: 0 }]
       };
+    },
+    addstore() {
+      this.temp.stores.push({
+        name: "",
+        num: 0
+      });
+    },
+    removeStore(item) {
+      var index = this.temp.stores.indexOf(item);
+      if (index !== -1) {
+        this.temp.stores.splice(index, 1);
+      }
     },
     handleCreate() {
       this.resetTemp();

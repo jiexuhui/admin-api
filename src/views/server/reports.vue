@@ -132,7 +132,7 @@ export default {
       total: null,
       listLoading: true,
       listQuery: {
-        pid: "",
+        pid: 0,
         time: [],
         page: 1,
         limit: 20

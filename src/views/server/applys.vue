@@ -30,6 +30,7 @@
         :default-time="['12:00:00', '08:00:00']">
       </el-date-picker>
       <el-button class="filter-item" type="primary" v-waves icon="el-icon-search" @click="handleFilter">{{$t('table.search')}}</el-button>
+    
     </div>
 
     <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row
@@ -87,6 +88,7 @@
           </el-button>
           <el-button type="success" size="mini" @click="handleModifyStatus(scope.row)" v-if="scope.row.status===0">通过申请
           </el-button>
+          <el-button size="mini" type="primary" icon="document" @click="handleDownload(scope.row)" :loading="downloadLoading">{{$t('excel.export')}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -137,7 +139,7 @@
 </template>
 
 <script>
-import { applys, addreport, updateapply } from "@/api/server";
+import { applys, addreport, updateapply, goodsdetail } from "@/api/server";
 import waves from "@/directive/waves"; // 水波纹指令
 import { parseTime } from "@/utils";
 import { parse } from "path";
@@ -154,7 +156,7 @@ export default {
       total: null,
       listLoading: true,
       listQuery: {
-        anchor: "",
+        anchor: 0,
         status: 1,
         page: 1,
         limit: 20,
@@ -209,7 +211,8 @@ export default {
       goods: [],
       link: {
         pid: 0
-      }
+      },
+      downloadLoading: false
     };
   },
   created() {
@@ -288,6 +291,50 @@ export default {
           });
         }
       });
+    },
+    handleDownload(row) {
+      this.downloadLoading = true;
+      goodsdetail(row.goodids).then(res => {
+        console.log("res:", res);
+        import("@/vendor/Export2Excel").then(excel => {
+          const tHeader = [
+            "图片",
+            "货号",
+            "链接",
+            "库存",
+            "直播专享价"
+            // "佣金"
+          ];
+          const filterVal = [
+            "mainImg",
+            "goodsName",
+            "taobaourl",
+            "store",
+            "price"
+            // "commission"
+          ];
+          const data = this.formatJson(filterVal, res.data);
+          console.log(data);
+          excel.export_json_to_excel({
+            header: tHeader,
+            data,
+            filename: "播单" + row.id,
+            autoWidth: this.autoWidth
+          });
+          this.downloadLoading = false;
+        });
+      });
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v =>
+        filterVal.map(j => {
+          if (j === "timestamp") {
+            return parseTime(v[j]);
+          } else {
+            return v[j];
+          }
+        })
+      );
     },
     handleFilter() {
       this.listQuery.page = 1;

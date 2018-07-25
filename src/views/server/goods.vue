@@ -28,7 +28,7 @@
       </el-table-column>
       <el-table-column  align="center" label="库存" width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.storenum}}</span>
+          <span>{{scope.row.showshor}}</span>
         </template>
       </el-table-column>
       <el-table-column  align="center" label="佣金" width="100">
@@ -53,7 +53,7 @@
       </el-table-column>
       <el-table-column align="center" label="介绍图">
         <template slot-scope="scope">
-          <span  class="link-type" @click="handthumbsleUpload(scope.row)" v-for="thumb in scope.row.thumbs">
+          <span class="link-type" @click="handthumbsleUpload(scope.row)" v-for="thumb in scope.row.thumbs">
             <img :src="thumb" width="40" height="40" style="padding:5px"/>
           </span>
         </template>
@@ -109,10 +109,13 @@
             :key="item.key"
             prop="stores"
           >
-            库存类型：<el-input v-model="item.name"></el-input>数量<el-input v-model="item.num"></el-input><el-button style="margin-top:20px" @click.prevent="removeStore(item)">删除</el-button>
+            颜色<el-input v-model="item.color"></el-input>
+            SIZE<el-input v-model="item.size"></el-input>
+            数量<el-input v-model="item.num"></el-input>
+            <el-button style="margin-top:20px" @click.prevent="removeStore(item)">删除</el-button>
           </el-form-item>
           <el-button style="margin-left:82px;margin-bottom:20px" @click.prevent="addstore()">增加库存类型</el-button>
-        <el-form-item label="佣金" prop="storenum">
+        <el-form-item label="佣金" prop="commission">
           <el-input type="number" v-model="temp.commission"></el-input>
         </el-form-item>
         <el-form-item label="亮点" prop="point">
@@ -296,7 +299,7 @@ export default {
       uploadstatus: "",
       selectedoption: [],
       classifyoption: [],
-      stores:[{ name: "", num: 0 }]
+      stores: [{ color: "白色", size: "S", num: 0 }]
     };
   },
   filters: {
@@ -320,12 +323,15 @@ export default {
       this.listLoading = true;
       goods(this.listQuery).then(response => {
         // console.log(response.data[0]);
-        if (response.data[0][0].goodsid !== null) {
+        if (response.data[0].length > 0) {
           this.list = response.data[0];
+        } else {
+          this.list = [];
         }
         goodstypes().then(res => {
           this.categorys = res.data;
           for (let index of this.list) {
+            index.thumbs === null ? [""] : index.thumbs;
             for (let item of this.categorys) {
               if (item.id === index.fid) {
                 index.category = item.name + "/" + index.category;
@@ -376,7 +382,8 @@ export default {
       } else {
         this.mainEditform.tags = [];
       }
-      this.mainEditform.thumbs = this.mainEditform.thumbs.toString();
+      if (this.mainEditform.thumbs !== null)
+        this.mainEditform.thumbs = this.mainEditform.thumbs.toString();
       this.uploadstatus = "main";
       this.file.name = "主图";
       if (row.main !== "") {
@@ -434,6 +441,8 @@ export default {
       }
 
       console.log("mainEditform:", this.mainEditform);
+      this.mainEditform.storenum = 0;
+      this.mainEditform.category = this.mainEditform.cid;
       editgoods(this.mainEditform).then(res => {
         console.log("res:", res);
         if (res.code == 200) {
@@ -496,25 +505,26 @@ export default {
         tags: [],
         banner: 0,
         taobaourl: "",
-        stores: [{ name: "", num: 0 }]
+        stores: [{ color: "白色", size: "S", num: 0 }]
       };
-      this.stores = [{ name: "", num: 0 }]
+      this.stores = [{ color: "白色", size: "S", num: 0 }];
     },
     addstore() {
       this.stores.push({
-        name: "",
+        color: "白色",
+        size: "S",
         num: 0
       });
       console.log(this.stores);
     },
     removeStore(item) {
-      console.log("stores:", this.temp)
+      console.log("stores:", this.temp);
       var index = this.stores.indexOf(item);
-      console.log("index:",index)
+      console.log("index:", index);
       if (index !== -1) {
         this.stores.splice(index, 1);
       }
-      console.log("stores2:", this.stores)
+      console.log("stores2:", this.stores);
     },
     handleCreate() {
       this.resetTemp();
@@ -561,17 +571,18 @@ export default {
         this.temp.tags = [];
       }
       this.stores = [];
-      if(this.temp.storenum) {
-        const arr = this.temp.storenum.split(",")
-        for(const i of arr) {
-            let obj = {}  
-            let keyarr = i.split(":");
-            obj.name = keyarr[0]
-            obj.num = keyarr[1]
-            this.stores.push(obj)
+      if (this.temp.storenum) {
+        const arr = this.temp.storenum.split(",");
+        for (const i of arr) {
+          let obj = {};
+          let keyarr = i.split(":");
+          obj.color = keyarr[0];
+          obj.size = keyarr[1];
+          obj.num = keyarr[2];
+          this.stores.push(obj);
         }
       }
-      console.log("stores0", this.temp.stores)
+      console.log("stores:%o", this.temp.stores);
       this.temp.thumbs = this.temp.thumbs.toString();
       this.dialogFormVisible = true;
       this.$nextTick(() => {
@@ -586,6 +597,7 @@ export default {
           tempData.category = tempData.category[tempData.category.length - 1];
           console.log("tempData", tempData);
           tempData.stores = this.stores;
+          tempData.storenum = 0;
           editgoods(tempData).then(res => {
             console.log("res:", res);
             if (res.code == 200) {
@@ -612,13 +624,13 @@ export default {
           const goodsid = { goodsid: row.goodsid };
           delgoods(goodsid).then(res => {
             if (res.code == 200) {
-              this.getList();
               this.$notify({
                 title: "成功",
                 message: "删除成功",
                 type: "success",
                 duration: 2000
               });
+              this.getList();
             }
           });
         })

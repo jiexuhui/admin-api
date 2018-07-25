@@ -22,6 +22,11 @@
           <span>{{scope.$index+1}}</span>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="主播ID">
+        <template slot-scope="scope">
+          <span>{{scope.row.id}}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="昵称">
         <template slot-scope="scope">
           <span>{{scope.row.nickName}}</span>
@@ -59,7 +64,7 @@
       </el-table-column>
       <el-table-column min-width="150" label="提交时间">
         <template slot-scope="scope">
-          <span>{{scope.row.ctime}}</span>
+          <span>{{scope.row.utime}}</span>
         </template>
       </el-table-column>
        <el-table-column min-width="150" label="最近登录 ">

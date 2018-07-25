@@ -180,3 +180,14 @@ export function editclassify(params) {
 export function delclassify(params) {
   return request.post("/admin/server/delclassify", params);
 }
+
+/**
+ * 删除首页分类
+ * @param {*} params
+ */
+export function goodsdetail(goodsids) {
+  const params = {
+    goodsids
+  };
+  return request.post("/admin/server/goodsdetail", params);
+}

@@ -505,7 +505,8 @@ export default {
         tags: [],
         banner: 0,
         taobaourl: "",
-        stores: [{ color: "白色", size: "S", num: 0 }]
+        stores: [{ color: "白色", size: "S", num: 0 }],
+        classify: 0
       };
       this.stores = [{ color: "白色", size: "S", num: 0 }];
     },
@@ -528,6 +529,7 @@ export default {
     },
     handleCreate() {
       this.resetTemp();
+      console.log("temp1:", this.temp);
       console.log("category:", this.categorys);
       this.dialogStatus = "create";
       this.dialogFormVisible = true;

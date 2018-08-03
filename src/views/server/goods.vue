@@ -184,6 +184,7 @@
             action=""
             :on-preview="handlePreview"
             :on-remove="handleRemove"
+            accept="jpg"
             :before-upload="beforeupload" 
             :file-list="fileList"
             :auto-upload="true"

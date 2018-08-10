@@ -80,6 +80,11 @@
           <span><el-tag type="info">{{scope.row.status ===1?"已通过":"未通过"}}</el-tag></span>
         </template>
       </el-table-column>
+      <el-table-column min-width="150" label="创建时间">
+        <template slot-scope="scope">
+          <span><el-tag type="info">{{scope.row.ctime}}</el-tag></span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="success" size="mini" @click="handleCreate(scope.row)" v-if="scope.row.status===1 && scope.row.hasreport==0">添加报告
@@ -280,6 +285,7 @@ export default {
           console.log("temp:", this.temp);
           addreport(this.temp).then(res => {
             if (res.code === 200) {
+              this.getList();
               this.dialogFormVisible = false;
               this.$notify({
                 title: "成功",

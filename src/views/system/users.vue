@@ -129,9 +129,9 @@
 </template>
 
 <script>
-import {adminuserlist, addsystemuser, editsystemuser } from '@/api/system'
-import waves from '@/directive/waves' // 水波纹指令
-import { parseTime } from '@/utils'
+import { adminuserlist, addsystemuser, editsystemuser } from "@/api/system";
+import waves from "@/directive/waves"; // 水波纹指令
+import { parseTime } from "@/utils";
 
 // const calendarTypeOptions = [
 //   { key: 'CN', display_name: 'China' },
@@ -147,7 +147,7 @@ import { parseTime } from '@/utils'
 // }, {})
 
 export default {
-  name: 'complexTable',
+  name: "complexTable",
   directives: {
     waves
   },
@@ -160,7 +160,7 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        username:""
+        username: ""
       },
       temp: {
         username: undefined,
@@ -169,15 +169,15 @@ export default {
         introduction: "",
         avatar: "",
         status: 1,
-        roleid:"",
-        rolename:"",
-        join_at:""
+        roleid: "",
+        rolename: "",
+        join_at: ""
       },
       dialogFormVisible: false,
-      dialogStatus: '',
+      dialogStatus: "",
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: "Edit",
+        create: "Create"
       },
       dialogPvVisible: false,
       pvData: [],
@@ -190,58 +190,56 @@ export default {
           { required: true, message: "请输入密码", trigger: "blur" },
           { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
         ],
-        nickname: [
-          { required: true, message: "请输入简介", trigger: "blur" },
-        ]
+        nickname: [{ required: true, message: "请输入简介", trigger: "blur" }]
       },
       downloadLoading: false,
       role: [],
-      selectRole:{}
-    }
+      selectRole: {}
+    };
   },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        1: 'success',
-        0: 'info',
-      }
-      return statusMap[status]
-    },
+        1: "success",
+        0: "info"
+      };
+      return statusMap[status];
+    }
     // typeFilter(type) {
     //   return calendarTypeKeyValue[type]
     // }
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       adminuserlist(this.listQuery).then(response => {
-        this.list = response.data[0]
-        this.total = response.data[1][0].count
-        this.role = response.data[2]
-        this.listLoading = false
-      })
+        this.list = response.data[0];
+        this.total = response.data[1][0].count;
+        this.role = response.data[2];
+        this.listLoading = false;
+      });
     },
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      this.listQuery.page = 1;
+      this.getList();
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
-      this.getList()
+      this.listQuery.limit = val;
+      this.getList();
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val
-      this.getList()
+      this.listQuery.page = val;
+      this.getList();
     },
     handleModifyStatus(row, status) {
       this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-      row.status = status
+        message: "操作成功",
+        type: "success"
+      });
+      row.status = status;
     },
     resetTemp() {
       this.temp = {
@@ -249,130 +247,139 @@ export default {
         password: undefined,
         nickname: "",
         introduction: "",
-        avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+        avatar:
+          "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
         status: 1,
-        roleid:"",
-        rolename:"",
-        join_at:""
-      }
+        roleid: "",
+        rolename: "",
+        join_at: ""
+      };
     },
     handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.resetTemp();
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
           this.temp.roleid = this.selectRole.id || "";
           console.log(this.temp);
           addsystemuser(this.temp).then(res => {
-            if(res.code == 200){
+            if (res.code == 200) {
               this.temp.id = res.data.id;
               this.temp.roleid = this.selectRole.id;
               this.temp.join_at = res.data.join_at;
-              this.list.unshift(this.temp)
-              this.dialogFormVisible = false
+              this.list.unshift(this.temp);
+              this.dialogFormVisible = false;
               this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
+                title: "成功",
+                message: "创建成功",
+                type: "success",
                 duration: 2000
-              })
+              });
             }
-            
-          })
+          });
         }
-      })
+      });
     },
-    selectGet(vId){//这个vId也就是value值
+    selectGet(vId) {
+      //这个vId也就是value值
       let obj = {};
-      obj = this.role.find((item)=>{//这里的userList就是上面遍历的数据源
-          return item.role === vId;//筛选出匹配数据
+      obj = this.role.find(item => {
+        //这里的userList就是上面遍历的数据源
+        return item.role === vId; //筛选出匹配数据
       });
       this.selectRole = obj;
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
+      this.temp = Object.assign({}, row); // copy obj
       this.temp.password = "undefined";
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
+      this.dialogStatus = "update";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate(valid => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)// change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          tempData.roleid = this.selectRole.id;
-          console.log("%o",tempData);
-          this.$store
-            .dispatch("EditAdminUser",tempData).then(res => {
-              if(res.code == 200 ){
-                this.temp.rolename = this.selectRole.role;
-                this.temp.join_at = res.data.join_at;
-                for (const v of this.list) {
-                  if (v.id === this.temp.id) {
-                    const index = this.list.indexOf(v)
-                    this.list.splice(index, 1, this.temp)
-                    break
-                  }
+          const tempData = Object.assign({}, this.temp); // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+          // tempData.roleid = this.selectRole.id;
+          console.log("%o", tempData);
+          this.$store.dispatch("EditAdminUser", tempData).then(res => {
+            if (res.code == 200) {
+              this.temp.rolename = this.selectRole.role;
+              this.temp.join_at = res.data.join_at;
+              for (const v of this.list) {
+                if (v.id === this.temp.id) {
+                  const index = this.list.indexOf(v);
+                  this.list.splice(index, 1, this.temp);
+                  break;
                 }
-                this.dialogFormVisible = false
-                this.$notify({
-                  title: '成功',
-                  message: '更新成功',
-                  type: 'success',
-                  duration: 2000
-                })
               }
-          })
+              this.dialogFormVisible = false;
+              this.$notify({
+                title: "成功",
+                message: "更新成功",
+                type: "success",
+                duration: 2000
+              });
+            }
+          });
         }
-      })
+      });
     },
     handleDelete(row) {
       this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
+        title: "成功",
+        message: "删除成功",
+        type: "success",
         duration: 2000
-      })
-      const index = this.list.indexOf(row)
-      this.list.splice(index, 1)
+      });
+      const index = this.list.indexOf(row);
+      this.list.splice(index, 1);
     },
     handleFetchPv(pv) {
       fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
+        this.pvData = response.data.pvData;
+        this.dialogPvVisible = true;
+      });
     },
     handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal, this.list)
+      this.downloadLoading = true;
+      import("@/vendor/Export2Excel").then(excel => {
+        const tHeader = ["timestamp", "title", "type", "importance", "status"];
+        const filterVal = [
+          "timestamp",
+          "title",
+          "type",
+          "importance",
+          "status"
+        ];
+        const data = this.formatJson(filterVal, this.list);
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'table-list'
-        })
-        this.downloadLoading = false
-      })
+          filename: "table-list"
+        });
+        this.downloadLoading = false;
+      });
     },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
+      return jsonData.map(v =>
+        filterVal.map(j => {
+          if (j === "timestamp") {
+            return parseTime(v[j]);
+          } else {
+            return v[j];
+          }
+        })
+      );
     }
   }
-}
+};
 </script>
